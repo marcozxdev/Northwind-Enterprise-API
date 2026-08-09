@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
 
+    # jwt
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXP_MIN: int
+
+
+
     # redis
     REDIS_PORT: int
     REDIS_HOST: str
