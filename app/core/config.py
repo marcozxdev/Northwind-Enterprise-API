@@ -19,6 +19,18 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    
+    @property
+    def DATABASE_URL(self) -> str:
+        return (
+            f"postgresql+psycopg://"
+            f"{self.POSTGRES_USER}:"
+            f"{self.POSTGRES_PASSWORD}@"
+            f"{self.POSTGRES_HOST}:"
+            f"{self.POSTGRES_PORT}/"
+            f"{self.POSTGRES_DB}"
+        )
+
 
     # jwt
     JWT_SECRET_KEY: str
