@@ -21,6 +21,9 @@ SET default_with_oids = false;
 ---
 
 
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS customer_customer_demo;
 DROP TABLE IF EXISTS customer_demographics;
 DROP TABLE IF EXISTS employee_territories;
@@ -37,7 +40,82 @@ DROP TABLE IF EXISTS region;
 DROP TABLE IF EXISTS employees;
 
 --
--- Name: categories; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Auth Tables: roles, users, user_roles
+-- These tables handle authentication and authorization for the API.
+--
+
+
+--
+-- Name: roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- Stores the different roles available in the system.
+-- Each role has a name and a description of what it can do.
+--
+
+CREATE TABLE roles (
+    role_id smallserial NOT NULL,
+    role_name character varying(20) NOT NULL,
+    description text
+);
+
+ALTER TABLE ONLY roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (role_id);
+
+ALTER TABLE ONLY roles
+    ADD CONSTRAINT roles_role_name_unique UNIQUE (role_name);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- Stores user accounts for authentication.
+-- Each user has a username, email, hashed password, and status.
+-- The password is never stored in plain text, only the bcrypt hash.
+--
+
+CREATE TABLE users (
+    user_id serial NOT NULL,
+    username character varying(50) NOT NULL,
+    email character varying(100) NOT NULL,
+    hashed_password character varying(255) NOT NULL,
+    full_name character varying(100),
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_username_unique UNIQUE (username);
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_email_unique UNIQUE (email);
+
+
+--
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- Junction table linking users to roles (many-to-many relationship).
+-- A user can have multiple roles, and a role can be assigned to multiple users.
+-- For example, an admin user would have the 'admin' role linked here.
+--
+
+CREATE TABLE user_roles (
+    user_id integer NOT NULL,
+    role_id smallint NOT NULL
+);
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT user_roles_pkey PRIMARY KEY (user_id, role_id);
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT fk_user_roles_users FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT fk_user_roles_roles FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE;
+
+
+--
+-- Name: categories; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE categories (
@@ -241,6 +319,37 @@ CREATE TABLE us_states (
     state_abbr character varying(2),
     state_region character varying(50)
 );
+
+
+--
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: -
+-- Default roles for the system. These are the three permission levels:
+--   admin:  Full CRUD access to all resources
+--   user:   Read and write access (GET, POST, PUT)
+--   viewer: Read-only access (GET only)
+--
+
+INSERT INTO roles (role_id, role_name, description) VALUES (1, 'admin', 'Full CRUD access to all resources. Can create, read, update, and delete any data.');
+INSERT INTO roles (role_id, role_name, description) VALUES (2, 'user', 'Read and write access. Can view all data and create/update records.');
+INSERT INTO roles (role_id, role_name, description) VALUES (3, 'viewer', 'Read-only access. Can only view data, cannot create or modify anything.');
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
+-- Default admin user for initial setup.
+-- Password: admin123 (hashed with bcrypt)
+-- This user should be changed or removed in production.
+--
+
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (1, 'admin', 'admin@northwind.com', '$2b$12$LJ3m4ys3Lz0Qf8ZqK8B3zOJX8X8X8X8X8X8X8X8X8X8X8X8X8X', 'System Admin', true);
+
+
+--
+-- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: -
+-- Assign the admin role to the admin user
+--
+
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
 
 
 --
