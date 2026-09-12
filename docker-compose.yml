@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   northwind_postgres:
-    image: postgres:16-alpine
+    image: postgres:17 
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   northwind_redis:
-    image: redis:7-alpine
+    image: redis:latest 
     ports:
       - "${REDIS_PORT}:6379"
     restart: unless-stopped

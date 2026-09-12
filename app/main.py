@@ -48,3 +48,14 @@
 #   uvicorn app.main:app --reload --port 8000
 #   (o desde Docker: docker-compose up api)
 #
+
+
+
+
+
+from fastapi import APIRouter, FastAPI
+
+prefix = "northwind/api"
+app  = FastAPI()
+
+
