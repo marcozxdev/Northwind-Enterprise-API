@@ -1,35 +1,96 @@
-# schemas/suppliers.py
+# app/schemas/suppliers.py
 #
 # Esquemas Pydantic para el recurso Suppliers (Proveedores).
 #
-# Estos esquemas definen la estructura de los datos que se reciben
-# y se envian en los endpoints de proveedores.
+# ============================================================================
+# ESQUEMAS
+# ============================================================================
 #
-# Esquemas esperados:
+#   SupplierCreate:
+#     - company_name:  str [requerido]
+#     - contact_name:  str | None
+#     - contact_title: str | None
+#     - address:       str | None
+#     - city:          str | None
+#     - region:        str | None
+#     - postal_code:   str | None
+#     - country:       str | None
+#     - phone:         str | None
+#     - fax:           str | None
+#     - homepage:      str | None
 #
-#   SupplierCreate (request body para POST):
-#     - company_name:  str              [requerido]
-#     - contact_name:  str | None       [opcional, nombre del contacto]
-#     - contact_title: str | None       [opcional, cargo del contacto]
-#     - address:       str | None       [opcional, direccion]
-#     - city:          str | None       [opcional, ciudad]
-#     - region:        str | None       [opcional, region]
-#     - postal_code:   str | None       [opcional, codigo postal]
-#     - country:       str | None       [opcional, pais]
-#     - phone:         str | None       [opcional, telefono]
-#     - fax:           str | None       [opcional, fax]
-#     - homepage:      str | None       [opcional, URL del sitio web]
+#   SupplierUpdate:
+#     - Todos los campos opcionales.
 #
-#   SupplierUpdate (request body para PUT/PATCH):
-#     - Todos los campos de SupplierCreate pero opcionales.
-#
-#   SupplierResponse (response body):
+#   SupplierResponse:
 #     - Todos los campos de la tabla suppliers.
-#     - Config: from_attributes = True
 #
-#   SupplierList (respuesta paginada):
-#     - items:    list[SupplierResponse]
-#     - total:    int
-#     - page:     int
-#     - per_page: int
+#   SupplierList:
+#     - items, total, page, per_page
 #
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class SupplierCreate(BaseModel):
+    """
+    Cuerpo del request para POST /api/suppliers
+    """
+    company_name: str = Field(..., min_length=1, max_length=40)
+    contact_name: Optional[str] = Field(None, max_length=30)
+    contact_title: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    phone: Optional[str] = Field(None, max_length=24)
+    fax: Optional[str] = Field(None, max_length=24)
+    homepage: Optional[str] = None
+
+
+class SupplierUpdate(BaseModel):
+    """Todos los campos opcionales para PUT /api/suppliers/{supplier_id}"""
+    company_name: Optional[str] = Field(None, max_length=40)
+    contact_name: Optional[str] = Field(None, max_length=30)
+    contact_title: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    phone: Optional[str] = Field(None, max_length=24)
+    fax: Optional[str] = Field(None, max_length=24)
+    homepage: Optional[str] = None
+
+
+class SupplierResponse(BaseModel):
+    """
+    Respuesta de un proveedor.
+
+    Config:
+        - from_attributes = True
+    """
+    supplier_id: int
+    company_name: str
+    contact_name: Optional[str]
+    contact_title: Optional[str]
+    address: Optional[str]
+    city: Optional[str]
+    region: Optional[str]
+    postal_code: Optional[str]
+    country: Optional[str]
+    phone: Optional[str]
+    fax: Optional[str]
+    homepage: Optional[str]
+
+    model_config = {"from_attributes": True}
+
+
+class SupplierList(BaseModel):
+    """Respuesta paginada de proveedores."""
+    items: list[SupplierResponse]
+    total: int
+    page: int
+    per_page: int

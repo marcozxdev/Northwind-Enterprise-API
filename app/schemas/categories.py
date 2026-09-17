@@ -1,27 +1,58 @@
-# schemas/categories.py
+# app/schemas/categories.py
 #
 # Esquemas Pydantic para el recurso Categories (Categorias de productos).
 #
-# Estos esquemas definen la estructura de los datos que se reciben
-# y se envian en los endpoints de categorias.
+# ============================================================================
+# ESQUEMAS
+# ============================================================================
 #
-# Esquemas esperados:
+#   CategoryCreate:
+#     - category_name: str [requerido, max 15]
+#     - description:   str | None [opcional]
 #
-#   CategoryCreate (request body para POST):
-#     - category_name: str              [requerido, max 15 caracteres]
-#     - description:   str | None       [opcional, descripcion de la categoria]
-#     - picture:       bytes | None     [opcional, imagen en bytes]
+#   CategoryUpdate:
+#     - Todos los campos opcionales.
 #
-#   CategoryUpdate (request body para PUT/PATCH):
-#     - Todos los campos de CategoryCreate pero opcionales.
-#
-#   CategoryResponse (response body):
-#     - category_id:   int
-#     - category_name: str
-#     - description:   str | None
-#     - Config: from_attributes = True
+#   CategoryResponse:
+#     - category_id, category_name, description
 #
 #   CategoryList:
-#     - items: list[CategoryResponse]
-#     - total: int
+#     - items, total
 #
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class CategoryCreate(BaseModel):
+    """
+    Cuerpo del request para POST /api/categories
+    """
+    category_name: str = Field(..., min_length=1, max_length=15)
+    description: Optional[str] = None
+
+
+class CategoryUpdate(BaseModel):
+    """Todos los campos opcionales para PUT /api/categories/{category_id}"""
+    category_name: Optional[str] = Field(None, max_length=15)
+    description: Optional[str] = None
+
+
+class CategoryResponse(BaseModel):
+    """
+    Respuesta de una categoria.
+
+    Config:
+        - from_attributes = True
+    """
+    category_id: int
+    category_name: str
+    description: Optional[str]
+
+    model_config = {"from_attributes": True}
+
+
+class CategoryList(BaseModel):
+    """Lista de categorias (no paginada, son pocas)."""
+    items: list[CategoryResponse]
+    total: int
