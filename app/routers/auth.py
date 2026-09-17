@@ -5,11 +5,10 @@
 # Este router maneja el ciclo de vida completo de autenticacion:
 #   - Registro de nuevos usuarios
 #   - Login y generacion de tokens JWT
-#   - Gestion de usuarios (admin)
-#   - Asignacion de roles (admin)
+#   - Obtener perfil del usuario autenticado
 #
 # ============================================================================
-# ENDPOINTS DE AUTENTICACION (publicos)
+# ENDPOINTS
 # ============================================================================
 #
 #   POST /api/auth/register
@@ -38,72 +37,146 @@
 #     - Requiere: Header Authorization con token JWT valido.
 #     - Retorna: UserResponse con roles incluidos.
 #
-# ============================================================================
-# ENDPOINTS DE USUARIO (requieren autenticacion)
-# ============================================================================
-#
-#   GET /api/users
-#     - Lista todos los usuarios (paginado).
-#     - Requiere: Rol "admin".
-#     - Retorna: UserList (items, total, page, per_page)
-#
-#   GET /api/users/{user_id}
-#     - Obtiene un usuario por ID.
-#     - Requiere: Rol "admin" o ser el mismo usuario.
-#     - Retorna: UserResponse
-#
-#   PUT /api/users/{user_id}
-#     - Actualiza datos de un usuario.
-#     - Requiere: Rol "admin" o ser el mismo usuario.
-#     - Body: UserUpdate (full_name, email)
-#     - Retorna: UserResponse actualizado
-#
-#   DELETE /api/users/{user_id}
-#     - Desactiva un usuario (soft delete).
-#     - Requiere: Rol "admin".
-#     - Retorna: 204 No Content
-#
-#   PUT /api/users/{user_id}/roles
-#     - Asigna roles a un usuario.
-#     - Requiere: Rol "admin".
-#     - Body: UserUpdateRoles (role_ids: list[int])
-#     - Retorna: UserResponse con roles actualizados
-#
-# ============================================================================
-# MECANISMA DE PERMISOS
-# ============================================================================
-#
-# Cada endpoint verifica los permisos del usuario actual:
-#
-#   1. El token JWT se decodifica y se extrae el user_id.
-#   2. Se consultan los roles del usuario en la BD.
-#   3. Se verifica si el usuario tiene el rol necesario:
-#      - "admin":  Puede hacer todo (GET, POST, PUT, DELETE en todos los recursos)
-#      - "user":   Puede leer y escribir (GET, POST, PUT, pero NO DELETE)
-#      - "viewer": Solo puede leer (GET, pero NO POST, PUT, DELETE)
-#   4. Si no tiene permiso, se retorna 403 Forbidden.
-#
-# ============================================================================
-# FLUJO DE LOGIN COMPLETO
-# ============================================================================
-#
-#   Cliente                          API
-#     |                              |
-#     |  POST /api/auth/login        |
-#     |  {username, password}        |
-#     |  --------------------------> |
-#     |                              |  1. Buscar usuario por username
-#     |                              |  2. Verificar hash bcrypt
-#     |                              |  3. Generar JWT con user_id + roles
-#     |  {access_token, user}        |
-#     |  <--------------------------- |
-#     |                              |
-#     |  GET /api/customers          |
-#     |  Authorization: Bearer xxx   |
-#     |  --------------------------> |
-#     |                              |  4. Decodificar JWT
-#     |                              |  5. Obtener roles del usuario
-#     |                              |  6. Verificar permiso (viewer -> GET OK)
-#     |  200 OK + data               |
-#     |  <--------------------------- |
-#
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.core.dependencies import get_current_active_user
+from app.core.security import create_access_token, hash_password, verify_password
+from app.models.roles import Role
+from app.models.users import User
+from app.repositories.users import UserRepository
+from app.schemas.users import (
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+)
+
+router = APIRouter(prefix="/auth", tags=["Autenticacion"])
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    """
+    Registra un nuevo usuario.
+
+    POST /api/auth/register
+
+    Body:
+        - username:  str [requerido]
+        - email:     EmailStr [requerido]
+        - password:  str [requerido, min 6]
+        - full_name: str | None [opcional]
+
+    Response:
+        201: UserResponse (sin contrasena)
+
+    Flujo:
+        1. Verificar que username no exista
+        2. Verificar que email no exista
+        3. Hashear la contrasena
+        4. Crear usuario con rol "viewer" por defecto
+        5. Retornar usuario creado
+    """
+    repo = UserRepository(db)
+
+    # Verificar username unico
+    if repo.get_by_username(data.username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El nombre de usuario ya esta en uso",
+        )
+
+    # Verificar email unico
+    if repo.get_by_email(data.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El email ya esta registrado",
+        )
+
+    # Hashear contrasena
+    hashed_pw = hash_password(data.password)
+
+    # Obtener rol viewer por defecto
+    viewer_role = db.query(Role).filter(Role.role_name == "viewer").first()
+    role_ids = [viewer_role.role_id] if viewer_role else []
+
+    # Crear usuario
+    user_data = data.model_dump()
+    user_data["hashed_password"] = hashed_pw
+    del user_data["password"]
+
+    new_user = repo.create_with_roles(user_data, role_ids)
+    return new_user
+
+
+@router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    """
+    Inicia sesion y retorna un token JWT.
+
+    POST /api/auth/login
+
+    Body:
+        - username: str
+        - password: str
+
+    Response:
+        200: TokenResponse
+        {
+            "access_token": "eyJ...",
+            "token_type": "bearer",
+            "expires_in": 40,
+            "user": { ... }
+        }
+    """
+    repo = UserRepository(db)
+    user = repo.get_by_username(data.username)
+
+    # Verificar usuario existe
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales invalidas",
+        )
+
+    # Verificar contrasena
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales invalidas",
+        )
+
+    # Verificar que este activo
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cuenta desactivada",
+        )
+
+    # Generar token JWT
+    token_data = {"sub": str(user.user_id), "roles": user.role_names}
+    access_token = create_access_token(token_data)
+
+    return TokenResponse(
+        access_token=access_token,
+        expires_in=40,
+        user=UserResponse.model_validate(user),
+    )
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_active_user)):
+    """
+    Retorna el perfil del usuario autenticado.
+
+    GET /api/auth/me
+
+    Headers:
+        Authorization: Bearer <token>
+
+    Response:
+        200: UserResponse con roles
+    """
+    return current_user
