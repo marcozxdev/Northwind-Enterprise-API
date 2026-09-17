@@ -336,20 +336,50 @@ INSERT INTO roles (role_id, role_name, description) VALUES (3, 'viewer', 'Read-o
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
--- Default admin user for initial setup.
--- Password: admin123 (hashed with bcrypt)
--- This user should be changed or removed in production.
+-- Users for authentication testing.
+-- Passwords are bcrypt hashed. NEVER store plain text passwords!
 --
 
-INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (1, 'admin', 'admin@northwind.com', '$2b$12$LJ3m4ys3Lz0Qf8ZqK8B3zOJX8X8X8X8X8X8X8X8X8X8X8X8X8X', 'System Admin', true);
+-- User 1: Admin (full access)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (1, 'admin', 'admin@northwind.com', '$2b$12$AeDh1DM3W2dxYfL9QkekP.ldHv/HEgLvqZEqWzVWezM6rSOnQueUS', 'System Admin', true);
+
+-- User 2: Manager (admin + user roles)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (2, 'manager', 'manager@northwind.com', '$2b$12$tknIMSkUmdqgvEWkyCil2eFhk4FUUVl0nq3FWXNECjU6hdJwcz15q', 'Manager User', true);
+
+-- User 3: Vendedor (user role only)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (3, 'vendedor', 'vendedor@northwind.com', '$2b$12$2/xHK6QFYjLs/ZycCaLMfeDAgBQ1NNoAt64BulmHkXRgk/DNHQqDu', 'Sales Person', true);
+
+-- User 4: Viewer (viewer role only)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (4, 'viewer', 'viewer@northwind.com', '$2b$12$vUJdrr9ddVSrdIUW5mVe8uN19EOyrtpIn7v2dv25vFylRruzcKHZa', 'Read Only User', true);
+
+-- User 5: Auditor (user + viewer roles)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (5, 'auditor', 'auditor@northwind.com', '$2b$12$tljmehpwzx5FAnLLGnDci.ZRagjLg2HYLdnBNjMcWrOk2Vm4vF6qu', 'Audit User', true);
+
+-- User 6: Inactive user (for testing is_active=false)
+INSERT INTO users (user_id, username, email, hashed_password, full_name, is_active) VALUES (6, 'inactive', 'inactive@northwind.com', '$2b$12$vUJdrr9ddVSrdIUW5mVe8uN19EOyrtpIn7v2dv25vFylRruzcKHZa', 'Inactive User', false);
 
 
 --
 -- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: -
--- Assign the admin role to the admin user
+-- Role assignments for each user
 --
 
+-- Admin user: role_id=1 (admin)
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
+
+-- Manager user: role_id=1 (admin) + role_id=2 (user)
+INSERT INTO user_roles (user_id, role_id) VALUES (2, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (2, 2);
+
+-- Vendedor user: role_id=2 (user)
+INSERT INTO user_roles (user_id, role_id) VALUES (3, 2);
+
+-- Viewer user: role_id=3 (viewer)
+INSERT INTO user_roles (user_id, role_id) VALUES (4, 3);
+
+-- Auditor user: role_id=2 (user) + role_id=3 (viewer)
+INSERT INTO user_roles (user_id, role_id) VALUES (5, 2);
+INSERT INTO user_roles (user_id, role_id) VALUES (5, 3);
 
 
 --
@@ -4014,7 +4044,22 @@ ALTER TABLE ONLY customer_customer_demo
 ALTER TABLE ONLY employees
     ADD CONSTRAINT fk_employees_employees FOREIGN KEY (reports_to) REFERENCES employees;
 
-    
+
+--
+-- Reset sequences after explicit inserts
+-- Users: sync serial sequence with max user_id
+SELECT setval('users_user_id_seq', (SELECT COALESCE(MAX(user_id), 1) FROM users));
+
+-- Products: add autoincrement sequence (table was created without serial)
+CREATE SEQUENCE IF NOT EXISTS products_product_id_seq OWNED BY products.product_id;
+SELECT setval('products_product_id_seq', (SELECT COALESCE(MAX(product_id), 1) FROM products));
+ALTER TABLE products ALTER COLUMN product_id SET DEFAULT nextval('products_product_id_seq');
+
+-- Orders: add autoincrement sequence (table was created without serial)
+CREATE SEQUENCE IF NOT EXISTS orders_order_id_seq OWNED BY orders.order_id;
+SELECT setval('orders_order_id_seq', (SELECT COALESCE(MAX(order_id), 1) FROM orders));
+ALTER TABLE orders ALTER COLUMN order_id SET DEFAULT nextval('orders_order_id_seq');
+
 --
 -- PostgreSQL database dump complete
 --
