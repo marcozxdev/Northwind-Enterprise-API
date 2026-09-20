@@ -49,6 +49,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.cache import close_redis, init_redis
 from app.core.config import settings
 from app.routers import (
     auth,
@@ -95,6 +96,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicializar Redis al arrancar la app."""
+    init_redis()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cerrar Redis al apagar la app."""
+    close_redis()
+
 
 # Incluir routers
 prefix = "/northwind/api"

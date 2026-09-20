@@ -15,9 +15,17 @@
 #   GET    /api/territories              -> Listar todos los territorios
 #   GET    /api/territories/{id}         -> Obtener un territorio
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 30 min (datos estaticos).
+#   POST/PUT/DELETE invalidan el cache de regions/territories.
+#
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -41,6 +49,7 @@ router = APIRouter(tags=["Regiones"])
 
 
 @router.get("/regions", response_model=RegionList)
+@cache_response(ttl=1800, prefix="regions:list")
 def list_regions(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
@@ -49,6 +58,8 @@ def list_regions(
     Lista todas las regiones.
 
     GET /api/regions
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = RegionRepository(db)
     items, total = repo.get_all()
@@ -56,6 +67,7 @@ def list_regions(
 
 
 @router.get("/regions/{region_id}", response_model=RegionResponse)
+@cache_response(ttl=1800, prefix="regions:get")
 def get_region(
     region_id: int,
     db: Session = Depends(get_db),
@@ -65,6 +77,8 @@ def get_region(
     Obtiene una region por ID.
 
     GET /api/regions/{region_id}
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = RegionRepository(db)
     region = repo.get_by_id(region_id)
@@ -113,9 +127,14 @@ def create_region(
     Crea una nueva region.
 
     POST /api/regions
+
+    Invalida cache de regions.
     """
     repo = RegionRepository(db)
     new_region = repo.create(data.model_dump())
+
+    delete_cache_pattern("regions:*")
+
     return new_region
 
 
@@ -130,6 +149,8 @@ def update_region(
     Actualiza una region.
 
     PUT /api/regions/{region_id}
+
+    Invalida cache de regions.
     """
     repo = RegionRepository(db)
 
@@ -141,6 +162,9 @@ def update_region(
         )
 
     updated = repo.update(region_id, data.model_dump(exclude_unset=True))
+
+    delete_cache_pattern("regions:*")
+
     return updated
 
 
@@ -154,6 +178,8 @@ def delete_region(
     Elimina una region.
 
     DELETE /api/regions/{region_id}
+
+    Invalida cache de regions.
     """
     repo = RegionRepository(db)
 
@@ -165,6 +191,9 @@ def delete_region(
         )
 
     repo.delete(region_id)
+
+    delete_cache_pattern("regions:*")
+
     return None
 
 
@@ -174,6 +203,7 @@ def delete_region(
 
 
 @router.get("/territories", response_model=list[TerritoryResponse])
+@cache_response(ttl=1800, prefix="territories:list")
 def list_territories(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
@@ -182,6 +212,8 @@ def list_territories(
     Lista todos los territorios.
 
     GET /api/territories
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = TerritoryRepository(db)
     items, _ = repo.get_all()
@@ -189,6 +221,7 @@ def list_territories(
 
 
 @router.get("/territories/{territory_id}", response_model=TerritoryResponse)
+@cache_response(ttl=1800, prefix="territories:get")
 def get_territory(
     territory_id: str,
     db: Session = Depends(get_db),
@@ -198,6 +231,8 @@ def get_territory(
     Obtiene un territorio por ID.
 
     GET /api/territories/{territory_id}
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = TerritoryRepository(db)
     territory = repo.get_by_id(territory_id)
@@ -221,6 +256,8 @@ def create_territory(
     Crea un nuevo territorio.
 
     POST /api/territories
+
+    Invalida cache de territories.
     """
     repo = TerritoryRepository(db)
 
@@ -232,6 +269,9 @@ def create_territory(
         )
 
     new_territory = repo.create(data.model_dump())
+
+    delete_cache_pattern("territories:*")
+
     return new_territory
 
 
@@ -246,6 +286,8 @@ def update_territory(
     Actualiza un territorio.
 
     PUT /api/territories/{territory_id}
+
+    Invalida cache de territories.
     """
     repo = TerritoryRepository(db)
 
@@ -257,6 +299,9 @@ def update_territory(
         )
 
     updated = repo.update(territory_id, data.model_dump(exclude_unset=True))
+
+    delete_cache_pattern("territories:*")
+
     return updated
 
 
@@ -270,6 +315,8 @@ def delete_territory(
     Elimina un territorio.
 
     DELETE /api/territories/{territory_id}
+
+    Invalida cache de territories.
     """
     repo = TerritoryRepository(db)
 
@@ -281,4 +328,7 @@ def delete_territory(
         )
 
     repo.delete(territory_id)
+
+    delete_cache_pattern("territories:*")
+
     return None

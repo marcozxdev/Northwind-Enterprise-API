@@ -12,11 +12,19 @@
 #   PUT    /api/products/{id}     -> Actualizar un producto
 #   DELETE /api/products/{id}     -> Eliminar un producto
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 5 min (list) y 10 min (detail).
+#   POST/PUT/DELETE invalidan el cache de products.
+#
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -32,6 +40,7 @@ router = APIRouter(prefix="/products", tags=["Productos"])
 
 
 @router.get("/", response_model=ProductList)
+@cache_response(ttl=180, prefix="products:list")
 def list_products(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
@@ -48,6 +57,8 @@ def list_products(
     Lista productos con filtros opcionales.
 
     GET /api/products?page=1&category_id=1&in_stock=true
+
+    Cache: 180 segundos (3 min)
     """
     repo = ProductRepository(db)
     items, total = repo.get_all_with_filters(
@@ -75,6 +86,7 @@ def list_products(
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
+@cache_response(ttl=300, prefix="products:get")
 def get_product(
     product_id: int,
     db: Session = Depends(get_db),
@@ -84,6 +96,8 @@ def get_product(
     Obtiene un producto por ID.
 
     GET /api/products/{product_id}
+
+    Cache: 300 segundos (5 min)
     """
     repo = ProductRepository(db)
     product = repo.get_with_relations(product_id)
@@ -113,9 +127,15 @@ def create_product(
     Crea un nuevo producto.
 
     POST /api/products
+
+    Invalida cache de products.
     """
     repo = ProductRepository(db)
     new_product = repo.create(data.model_dump())
+
+    # Invalidar cache
+    delete_cache_pattern("products:*")
+
     return new_product
 
 
@@ -130,6 +150,8 @@ def update_product(
     Actualiza un producto.
 
     PUT /api/products/{product_id}
+
+    Invalida cache de products.
     """
     repo = ProductRepository(db)
 
@@ -141,6 +163,10 @@ def update_product(
         )
 
     updated = repo.update(product_id, data.model_dump(exclude_unset=True))
+
+    # Invalidar cache
+    delete_cache_pattern("products:*")
+
     return updated
 
 
@@ -154,6 +180,8 @@ def delete_product(
     Elimina un producto.
 
     DELETE /api/products/{product_id}
+
+    Invalida cache de products.
     """
     repo = ProductRepository(db)
 
@@ -165,4 +193,8 @@ def delete_product(
         )
 
     repo.delete(product_id)
+
+    # Invalidar cache
+    delete_cache_pattern("products:*")
+
     return None

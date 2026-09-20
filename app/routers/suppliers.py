@@ -12,11 +12,19 @@
 #   PUT    /api/suppliers/{id}     -> Actualizar un proveedor
 #   DELETE /api/suppliers/{id}     -> Eliminar un proveedor
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 30 min (datos estaticos).
+#   POST/PUT/DELETE invalidan el cache de suppliers.
+#
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -32,6 +40,7 @@ router = APIRouter(prefix="/suppliers", tags=["Proveedores"])
 
 
 @router.get("/", response_model=SupplierList)
+@cache_response(ttl=1800, prefix="suppliers:list")
 def list_suppliers(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
@@ -45,6 +54,8 @@ def list_suppliers(
     Lista proveedores con filtros opcionales.
 
     GET /api/suppliers?page=1&country=USA
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = SupplierRepository(db)
     items, total = repo.get_all_with_filters(
@@ -58,6 +69,7 @@ def list_suppliers(
 
 
 @router.get("/{supplier_id}", response_model=SupplierResponse)
+@cache_response(ttl=1800, prefix="suppliers:get")
 def get_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),
@@ -67,6 +79,8 @@ def get_supplier(
     Obtiene un proveedor por ID.
 
     GET /api/suppliers/{supplier_id}
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = SupplierRepository(db)
     supplier = repo.get_by_id(supplier_id)
@@ -90,9 +104,14 @@ def create_supplier(
     Crea un nuevo proveedor.
 
     POST /api/suppliers
+
+    Invalida cache de suppliers.
     """
     repo = SupplierRepository(db)
     new_supplier = repo.create(data.model_dump())
+
+    delete_cache_pattern("suppliers:*")
+
     return new_supplier
 
 
@@ -107,6 +126,8 @@ def update_supplier(
     Actualiza un proveedor.
 
     PUT /api/suppliers/{supplier_id}
+
+    Invalida cache de suppliers.
     """
     repo = SupplierRepository(db)
 
@@ -118,6 +139,9 @@ def update_supplier(
         )
 
     updated = repo.update(supplier_id, data.model_dump(exclude_unset=True))
+
+    delete_cache_pattern("suppliers:*")
+
     return updated
 
 
@@ -131,6 +155,8 @@ def delete_supplier(
     Elimina un proveedor.
 
     DELETE /api/suppliers/{supplier_id}
+
+    Invalida cache de suppliers.
     """
     repo = SupplierRepository(db)
 
@@ -142,4 +168,7 @@ def delete_supplier(
         )
 
     repo.delete(supplier_id)
+
+    delete_cache_pattern("suppliers:*")
+
     return None

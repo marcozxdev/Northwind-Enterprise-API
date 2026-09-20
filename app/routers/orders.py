@@ -12,12 +12,20 @@
 #   PUT    /api/orders/{id}           -> Actualizar una orden
 #   DELETE /api/orders/{id}           -> Eliminar una orden
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 3 min (list) y 5 min (detail).
+#   POST/PUT/DELETE invalidan el cache de orders.
+#
 from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -55,6 +63,7 @@ def _enrich_order(order) -> OrderResponse:
 
 
 @router.get("/", response_model=OrderList)
+@cache_response(ttl=180, prefix="orders:list")
 def list_orders(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
@@ -70,6 +79,8 @@ def list_orders(
     Lista ordenes con filtros opcionales.
 
     GET /api/orders?page=1&customer_id=ALFKI&shipped=false
+
+    Cache: 180 segundos (3 min)
     """
     repo = OrderRepository(db)
     items, total = repo.get_all_with_filters(
@@ -87,6 +98,7 @@ def list_orders(
 
 
 @router.get("/{order_id}", response_model=OrderResponse)
+@cache_response(ttl=300, prefix="orders:get")
 def get_order(
     order_id: int,
     db: Session = Depends(get_db),
@@ -96,6 +108,8 @@ def get_order(
     Obtiene una orden con todos sus detalles.
 
     GET /api/orders/{order_id}
+
+    Cache: 300 segundos (5 min)
     """
     repo = OrderRepository(db)
     order = repo.get_with_details(order_id)
@@ -119,6 +133,8 @@ def create_order(
     Crea una orden con sus detalles.
 
     POST /api/orders
+
+    Invalida cache de orders.
     """
     repo = OrderRepository(db)
 
@@ -126,6 +142,10 @@ def create_order(
     details_data = [d.model_dump() for d in data.details]
 
     new_order = repo.create_with_details(order_data, details_data)
+
+    # Invalidar cache
+    delete_cache_pattern("orders:*")
+
     return _enrich_order(new_order)
 
 
@@ -140,6 +160,8 @@ def update_order(
     Actualiza una orden.
 
     PUT /api/orders/{order_id}
+
+    Invalida cache de orders.
     """
     repo = OrderRepository(db)
 
@@ -151,6 +173,10 @@ def update_order(
         )
 
     updated = repo.update(order_id, data.model_dump(exclude_unset=True))
+
+    # Invalidar cache
+    delete_cache_pattern("orders:*")
+
     return _enrich_order(updated)
 
 
@@ -164,6 +190,8 @@ def delete_order(
     Elimina una orden.
 
     DELETE /api/orders/{order_id}
+
+    Invalida cache de orders.
     """
     repo = OrderRepository(db)
 
@@ -175,4 +203,8 @@ def delete_order(
         )
 
     repo.delete(order_id)
+
+    # Invalidar cache
+    delete_cache_pattern("orders:*")
+
     return None

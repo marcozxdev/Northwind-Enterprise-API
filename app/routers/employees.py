@@ -13,11 +13,19 @@
 #   DELETE /api/employees/{id}         -> Eliminar un empleado
 #   GET    /api/employees/{id}/territories -> Territorios del empleado
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 3 min (list) y 5 min (detail).
+#   POST/PUT/DELETE invalidan el cache de employees.
+#
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -34,6 +42,7 @@ router = APIRouter(prefix="/employees", tags=["Empleados"])
 
 
 @router.get("/", response_model=EmployeeList)
+@cache_response(ttl=180, prefix="employees:list")
 def list_employees(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
@@ -49,6 +58,8 @@ def list_employees(
     Lista empleados con filtros opcionales.
 
     GET /api/employees?page=1&country=USA
+
+    Cache: 180 segundos (3 min)
     """
     repo = EmployeeRepository(db)
     items, total = repo.get_all_with_filters(
@@ -72,6 +83,7 @@ def list_employees(
 
 
 @router.get("/{employee_id}", response_model=EmployeeResponse)
+@cache_response(ttl=300, prefix="employees:get")
 def get_employee(
     employee_id: int,
     db: Session = Depends(get_db),
@@ -81,6 +93,8 @@ def get_employee(
     Obtiene un empleado por ID.
 
     GET /api/employees/{employee_id}
+
+    Cache: 300 segundos (5 min)
     """
     repo = EmployeeRepository(db)
     employee = repo.get_with_relations(employee_id)
@@ -108,9 +122,14 @@ def create_employee(
     Crea un nuevo empleado.
 
     POST /api/employees
+
+    Invalida cache de employees.
     """
     repo = EmployeeRepository(db)
     new_employee = repo.create(data.model_dump())
+
+    delete_cache_pattern("employees:*")
+
     return new_employee
 
 
@@ -125,6 +144,8 @@ def update_employee(
     Actualiza un empleado.
 
     PUT /api/employees/{employee_id}
+
+    Invalida cache de employees.
     """
     repo = EmployeeRepository(db)
 
@@ -136,6 +157,9 @@ def update_employee(
         )
 
     updated = repo.update(employee_id, data.model_dump(exclude_unset=True))
+
+    delete_cache_pattern("employees:*")
+
     return updated
 
 
@@ -149,6 +173,8 @@ def delete_employee(
     Elimina un empleado.
 
     DELETE /api/employees/{employee_id}
+
+    Invalida cache de employees.
     """
     repo = EmployeeRepository(db)
 
@@ -160,6 +186,9 @@ def delete_employee(
         )
 
     repo.delete(employee_id)
+
+    delete_cache_pattern("employees:*")
+
     return None
 
 

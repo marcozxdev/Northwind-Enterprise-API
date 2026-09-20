@@ -12,11 +12,19 @@
 #   PUT    /api/customers/{id}     -> Actualizar un cliente
 #   DELETE /api/customers/{id}     -> Eliminar un cliente
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 3 min (list) y 5 min (detail).
+#   POST/PUT/DELETE invalidan el cache de customers.
+#
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -32,6 +40,7 @@ router = APIRouter(prefix="/customers", tags=["Clientes"])
 
 
 @router.get("/", response_model=CustomerList)
+@cache_response(ttl=180, prefix="customers:list")
 def list_customers(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
@@ -46,6 +55,8 @@ def list_customers(
     Lista clientes con filtros opcionales.
 
     GET /api/customers?page=1&company_name=alice&country=USA
+
+    Cache: 180 segundos (3 min)
     """
     repo = CustomerRepository(db)
     items, total = repo.get_all_with_filters(
@@ -60,6 +71,7 @@ def list_customers(
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
+@cache_response(ttl=300, prefix="customers:get")
 def get_customer(
     customer_id: str,
     db: Session = Depends(get_db),
@@ -69,6 +81,8 @@ def get_customer(
     Obtiene un cliente por ID.
 
     GET /api/customers/{customer_id}
+
+    Cache: 300 segundos (5 min)
     """
     repo = CustomerRepository(db)
     customer = repo.get_by_id(customer_id)
@@ -92,6 +106,8 @@ def create_customer(
     Crea un nuevo cliente.
 
     POST /api/customers
+
+    Invalida cache de customers.
     """
     repo = CustomerRepository(db)
 
@@ -103,6 +119,10 @@ def create_customer(
         )
 
     new_customer = repo.create(data.model_dump())
+
+    # Invalidar cache
+    delete_cache_pattern("customers:*")
+
     return new_customer
 
 
@@ -117,6 +137,8 @@ def update_customer(
     Actualiza un cliente.
 
     PUT /api/customers/{customer_id}
+
+    Invalida cache de customers.
     """
     repo = CustomerRepository(db)
 
@@ -128,6 +150,10 @@ def update_customer(
         )
 
     updated = repo.update(customer_id, data.model_dump(exclude_unset=True))
+
+    # Invalidar cache
+    delete_cache_pattern("customers:*")
+
     return updated
 
 
@@ -141,6 +167,8 @@ def delete_customer(
     Elimina un cliente.
 
     DELETE /api/customers/{customer_id}
+
+    Invalida cache de customers.
     """
     repo = CustomerRepository(db)
 
@@ -152,4 +180,8 @@ def delete_customer(
         )
 
     repo.delete(customer_id)
+
+    # Invalidar cache
+    delete_cache_pattern("customers:*")
+
     return None

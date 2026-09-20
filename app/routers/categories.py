@@ -12,9 +12,17 @@
 #   PUT    /api/categories/{id}     -> Actualizar una categoria
 #   DELETE /api/categories/{id}     -> Eliminar una categoria
 #
+# ============================================================================
+# CACHE
+# ============================================================================
+#
+#   GET endpoints usan Redis cache con TTL de 30 min (datos estaticos).
+#   POST/PUT/DELETE invalidan el cache de categories.
+#
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.cache import cache_response, delete_cache_pattern
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User
@@ -30,6 +38,7 @@ router = APIRouter(prefix="/categories", tags=["Categorias"])
 
 
 @router.get("/", response_model=CategoryList)
+@cache_response(ttl=1800, prefix="categories:list")
 def list_categories(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
@@ -38,6 +47,8 @@ def list_categories(
     Lista todas las categorias.
 
     GET /api/categories
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = CategoryRepository(db)
     items, total = repo.get_all()
@@ -45,6 +56,7 @@ def list_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
+@cache_response(ttl=1800, prefix="categories:get")
 def get_category(
     category_id: int,
     db: Session = Depends(get_db),
@@ -54,6 +66,8 @@ def get_category(
     Obtiene una categoria por ID.
 
     GET /api/categories/{category_id}
+
+    Cache: 1800 segundos (30 min) - datos estaticos.
     """
     repo = CategoryRepository(db)
     category = repo.get_by_id(category_id)
@@ -77,9 +91,14 @@ def create_category(
     Crea una nueva categoria.
 
     POST /api/categories
+
+    Invalida cache de categories.
     """
     repo = CategoryRepository(db)
     new_category = repo.create(data.model_dump())
+
+    delete_cache_pattern("categories:*")
+
     return new_category
 
 
@@ -94,6 +113,8 @@ def update_category(
     Actualiza una categoria.
 
     PUT /api/categories/{category_id}
+
+    Invalida cache de categories.
     """
     repo = CategoryRepository(db)
 
@@ -105,6 +126,9 @@ def update_category(
         )
 
     updated = repo.update(category_id, data.model_dump(exclude_unset=True))
+
+    delete_cache_pattern("categories:*")
+
     return updated
 
 
@@ -118,6 +142,8 @@ def delete_category(
     Elimina una categoria.
 
     DELETE /api/categories/{category_id}
+
+    Invalida cache de categories.
     """
     repo = CategoryRepository(db)
 
@@ -129,4 +155,7 @@ def delete_category(
         )
 
     repo.delete(category_id)
+
+    delete_cache_pattern("categories:*")
+
     return None
