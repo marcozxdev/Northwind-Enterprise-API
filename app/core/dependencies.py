@@ -60,27 +60,28 @@
 #       ...
 #
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.models.users import User
 
-# Instancia de OAuth2PasswordBearer que apunta a la URL de login
-# FastAPI usará esto para extraer el token del header Authorization
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/northwind/api/auth/login")
+# Instancia de HTTPBearer que extrae el token del header Authorization
+# FastAPI usará esto para extraer el token del header
+# Swagger mostrara un campo simple para pegar el token JWT
+oauth2_scheme = HTTPBearer()
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
     """
     Obtiene el usuario actual a partir del token JWT.
 
     Args:
-        token: Token extraído del header Authorization
+        credentials: Credenciales extraídas del header Authorization
         db: Sesión de base de datos
 
     Returns:
@@ -95,6 +96,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    token = credentials.credentials
     payload = decode_access_token(token)
     if payload is None:
         raise credentials_exception
