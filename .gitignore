@@ -1,5 +1,5 @@
 .venv
 .env
-__pycache__
-data
-structure-ex.txt
+__pycache__/
+*.pyc
+.pytest_cache/

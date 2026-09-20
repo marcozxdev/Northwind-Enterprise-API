@@ -1,0 +1,46 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - northwind_postgres
+      - northwind_redis
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  northwind_postgres:
+    image: postgres:17 
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  northwind_redis:
+    image: redis:latest 
+    ports:
+      - "${REDIS_PORT}:6379"
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - northwind_postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
