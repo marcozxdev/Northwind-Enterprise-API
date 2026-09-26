@@ -35,6 +35,7 @@
 #     - page:     int
 #     - per_page: int
 #
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -58,15 +59,15 @@ class CustomerCreate(BaseModel):
     """
     customer_id: str = Field(..., min_length=5, max_length=5)
     company_name: str = Field(..., min_length=1, max_length=40)
-    contact_name: str | None = Field(None, max_length=30)
-    contact_title: str | None = Field(None, max_length=30)
-    address: str | None = Field(None, max_length=60)
-    city: str | None = Field(None, max_length=15)
-    region: str | None = Field(None, max_length=15)
-    postal_code: str | None = Field(None, max_length=10)
-    country: str | None = Field(None, max_length=15)
-    phone: str | None = Field(None, max_length=24)
-    fax: str | None = Field(None, max_length=24)
+    contact_name: Optional[str] = Field(None, max_length=30)
+    contact_title: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    phone: Optional[str] = Field(None, max_length=24)
+    fax: Optional[str] = Field(None, max_length=24)
 
 
 class CustomerUpdate(BaseModel):
@@ -74,16 +75,16 @@ class CustomerUpdate(BaseModel):
     Cuerpo del request para PUT /api/customers/{customer_id}
     Todos los campos son opcionales (solo se actualizan los enviados).
     """
-    company_name: str | None = Field(None, max_length=40)
-    contact_name: str | None = Field(None, max_length=30)
-    contact_title: str | None = Field(None, max_length=30)
-    address: str | None = Field(None, max_length=60)
-    city: str | None = Field(None, max_length=15)
-    region: str | None = Field(None, max_length=15)
-    postal_code: str | None = Field(None, max_length=10)
-    country: str | None = Field(None, max_length=15)
-    phone: str | None = Field(None, max_length=24)
-    fax: str | None = Field(None, max_length=24)
+    company_name: Optional[str] = Field(None, max_length=40)
+    contact_name: Optional[str] = Field(None, max_length=30)
+    contact_title: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    phone: Optional[str] = Field(None, max_length=24)
+    fax: Optional[str] = Field(None, max_length=24)
 
 
 class CustomerResponse(BaseModel):
@@ -95,15 +96,15 @@ class CustomerResponse(BaseModel):
     """
     customer_id: str
     company_name: str
-    contact_name: str | None
-    contact_title: str | None
-    address: str | None
-    city: str | None
-    region: str | None
-    postal_code: str | None
-    country: str | None
-    phone: str | None
-    fax: str | None
+    contact_name: Optional[str]
+    contact_title: Optional[str]
+    address: Optional[str]
+    city: Optional[str]
+    region: Optional[str]
+    postal_code: Optional[str]
+    country: Optional[str]
+    phone: Optional[str]
+    fax: Optional[str]
 
     model_config = {"from_attributes": True}
 

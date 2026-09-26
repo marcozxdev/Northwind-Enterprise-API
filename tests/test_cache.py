@@ -37,6 +37,7 @@
 #     - GET /categories usa TTL largo (30 min).
 
 
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -46,9 +47,11 @@ from app.core.cache import (
     close_redis,
     delete_cache_pattern,
     get_cache,
+    get_redis_client,
     init_redis,
     set_cache,
 )
+
 
 # ============================================================================
 # FIXTURE: Initialize Redis for direct function tests

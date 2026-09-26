@@ -68,7 +68,7 @@ import hashlib
 import json
 import logging
 from functools import wraps
-from typing import Any
+from typing import Any, Optional
 
 import redis
 
@@ -77,10 +77,10 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 # Instancia global de Redis
-_redis_client: redis.Redis | None = None
+_redis_client: Optional[redis.Redis] = None
 
 
-def get_redis_client() -> redis.Redis | None:
+def get_redis_client() -> Optional[redis.Redis]:
     """
     Retorna la instancia global de Redis.
 
@@ -140,7 +140,7 @@ def close_redis():
         _redis_client = None
 
 
-def get_cache(key: str) -> Any | None:
+def get_cache(key: str) -> Optional[Any]:
     """
     Obtiene un valor del cache por su key.
 

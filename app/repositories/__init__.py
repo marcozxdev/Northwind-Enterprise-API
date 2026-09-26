@@ -7,15 +7,15 @@
 #   from app.repositories.users import UserRepository
 #
 from app.repositories.base import BaseRepository
-from app.repositories.categories import CategoryRepository
-from app.repositories.customers import CustomerRepository
-from app.repositories.employees import EmployeeRepository
-from app.repositories.orders import OrderRepository
-from app.repositories.products import ProductRepository
-from app.repositories.regions import RegionRepository, TerritoryRepository
-from app.repositories.shippers import ShipperRepository
-from app.repositories.suppliers import SupplierRepository
 from app.repositories.users import UserRepository
+from app.repositories.customers import CustomerRepository
+from app.repositories.products import ProductRepository
+from app.repositories.orders import OrderRepository
+from app.repositories.employees import EmployeeRepository
+from app.repositories.categories import CategoryRepository
+from app.repositories.suppliers import SupplierRepository
+from app.repositories.shippers import ShipperRepository
+from app.repositories.regions import RegionRepository, TerritoryRepository
 
 __all__ = [
     "BaseRepository",

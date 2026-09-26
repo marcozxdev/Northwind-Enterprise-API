@@ -76,11 +76,11 @@
 #   # empleado.territories = [Territory("06897"), Territory("19713")]
 #
 from datetime import date
-
-from sqlalchemy import Column, ForeignKey, String, Table, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
 
 # Tabla asociativa employee_territories
 # SQLAlchemy la usa como tabla "secondary" en la relacion M:N
@@ -136,6 +136,10 @@ class Employee(Base):
 
 # Tabla asociativa employee_territories
 # Define la relacion M:N entre employees y territories
+from sqlalchemy import Column, Table
+
+from app.core.database import Base
+
 EmployeeTerritory = Table(
     "employee_territories",
     Base.metadata,

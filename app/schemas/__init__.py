@@ -6,70 +6,70 @@
 #   from app.schemas import CustomerCreate, UserResponse, OrderList
 #   from app.schemas.users import LoginRequest
 #
-from app.schemas.categories import (
-    CategoryCreate,
-    CategoryList,
-    CategoryResponse,
-    CategoryUpdate,
+from app.schemas.users import (
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+    UserUpdate,
+    UserUpdateRoles,
+    UserList,
+    RoleResponse,
+    RoleList,
 )
 from app.schemas.customers import (
     CustomerCreate,
-    CustomerList,
-    CustomerResponse,
     CustomerUpdate,
+    CustomerResponse,
+    CustomerList,
 )
-from app.schemas.employees import (
-    EmployeeCreate,
-    EmployeeList,
-    EmployeeResponse,
-    EmployeeTerritoryResponse,
-    EmployeeUpdate,
+from app.schemas.products import (
+    ProductCreate,
+    ProductUpdate,
+    ProductResponse,
+    ProductList,
 )
 from app.schemas.orders import (
     OrderCreate,
     OrderDetailCreate,
+    OrderUpdate,
+    OrderResponse,
     OrderDetailResponse,
     OrderList,
-    OrderResponse,
-    OrderUpdate,
 )
-from app.schemas.products import (
-    ProductCreate,
-    ProductList,
-    ProductResponse,
-    ProductUpdate,
+from app.schemas.employees import (
+    EmployeeCreate,
+    EmployeeUpdate,
+    EmployeeResponse,
+    EmployeeTerritoryResponse,
+    EmployeeList,
 )
-from app.schemas.regions import (
-    RegionCreate,
-    RegionList,
-    RegionResponse,
-    RegionUpdate,
-    TerritoryCreate,
-    TerritoryResponse,
-    TerritoryUpdate,
-)
-from app.schemas.shippers import (
-    ShipperCreate,
-    ShipperList,
-    ShipperResponse,
-    ShipperUpdate,
+from app.schemas.categories import (
+    CategoryCreate,
+    CategoryUpdate,
+    CategoryResponse,
+    CategoryList,
 )
 from app.schemas.suppliers import (
     SupplierCreate,
-    SupplierList,
-    SupplierResponse,
     SupplierUpdate,
+    SupplierResponse,
+    SupplierList,
 )
-from app.schemas.users import (
-    LoginRequest,
-    RegisterRequest,
-    RoleList,
-    RoleResponse,
-    TokenResponse,
-    UserList,
-    UserResponse,
-    UserUpdate,
-    UserUpdateRoles,
+from app.schemas.shippers import (
+    ShipperCreate,
+    ShipperUpdate,
+    ShipperResponse,
+    ShipperList,
+)
+from app.schemas.regions import (
+    RegionCreate,
+    RegionUpdate,
+    RegionResponse,
+    RegionList,
+    TerritoryCreate,
+    TerritoryUpdate,
+    TerritoryResponse,
 )
 
 __all__ = [

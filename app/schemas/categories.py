@@ -19,6 +19,7 @@
 #   CategoryList:
 #     - items, total
 #
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -28,13 +29,13 @@ class CategoryCreate(BaseModel):
     Cuerpo del request para POST /api/categories
     """
     category_name: str = Field(..., min_length=1, max_length=15)
-    description: str | None = None
+    description: Optional[str] = None
 
 
 class CategoryUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/categories/{category_id}"""
-    category_name: str | None = Field(None, max_length=15)
-    description: str | None = None
+    category_name: Optional[str] = Field(None, max_length=15)
+    description: Optional[str] = None
 
 
 class CategoryResponse(BaseModel):
@@ -46,7 +47,7 @@ class CategoryResponse(BaseModel):
     """
     category_id: int
     category_name: str
-    description: str | None
+    description: Optional[str]
 
     model_config = {"from_attributes": True}
 

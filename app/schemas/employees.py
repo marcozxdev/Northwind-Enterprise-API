@@ -38,6 +38,7 @@
 #     - items, total, page, per_page
 #
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -48,40 +49,40 @@ class EmployeeCreate(BaseModel):
     """
     last_name: str = Field(..., min_length=1, max_length=20)
     first_name: str = Field(..., min_length=1, max_length=10)
-    title: str | None = Field(None, max_length=30)
-    title_of_courtesy: str | None = Field(None, max_length=25)
-    birth_date: date | None = None
-    hire_date: date | None = None
-    address: str | None = Field(None, max_length=60)
-    city: str | None = Field(None, max_length=15)
-    region: str | None = Field(None, max_length=15)
-    postal_code: str | None = Field(None, max_length=10)
-    country: str | None = Field(None, max_length=15)
-    home_phone: str | None = Field(None, max_length=24)
-    extension: str | None = Field(None, max_length=4)
-    notes: str | None = None
-    reports_to: int | None = None
-    photo_path: str | None = Field(None, max_length=255)
+    title: Optional[str] = Field(None, max_length=30)
+    title_of_courtesy: Optional[str] = Field(None, max_length=25)
+    birth_date: Optional[date] = None
+    hire_date: Optional[date] = None
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    home_phone: Optional[str] = Field(None, max_length=24)
+    extension: Optional[str] = Field(None, max_length=4)
+    notes: Optional[str] = None
+    reports_to: Optional[int] = None
+    photo_path: Optional[str] = Field(None, max_length=255)
 
 
 class EmployeeUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/employees/{employee_id}"""
-    last_name: str | None = Field(None, max_length=20)
-    first_name: str | None = Field(None, max_length=10)
-    title: str | None = Field(None, max_length=30)
-    title_of_courtesy: str | None = Field(None, max_length=25)
-    birth_date: date | None = None
-    hire_date: date | None = None
-    address: str | None = Field(None, max_length=60)
-    city: str | None = Field(None, max_length=15)
-    region: str | None = Field(None, max_length=15)
-    postal_code: str | None = Field(None, max_length=10)
-    country: str | None = Field(None, max_length=15)
-    home_phone: str | None = Field(None, max_length=24)
-    extension: str | None = Field(None, max_length=4)
-    notes: str | None = None
-    reports_to: int | None = None
-    photo_path: str | None = Field(None, max_length=255)
+    last_name: Optional[str] = Field(None, max_length=20)
+    first_name: Optional[str] = Field(None, max_length=10)
+    title: Optional[str] = Field(None, max_length=30)
+    title_of_courtesy: Optional[str] = Field(None, max_length=25)
+    birth_date: Optional[date] = None
+    hire_date: Optional[date] = None
+    address: Optional[str] = Field(None, max_length=60)
+    city: Optional[str] = Field(None, max_length=15)
+    region: Optional[str] = Field(None, max_length=15)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    country: Optional[str] = Field(None, max_length=15)
+    home_phone: Optional[str] = Field(None, max_length=24)
+    extension: Optional[str] = Field(None, max_length=4)
+    notes: Optional[str] = None
+    reports_to: Optional[int] = None
+    photo_path: Optional[str] = Field(None, max_length=255)
 
 
 class EmployeeTerritoryResponse(BaseModel):
@@ -90,7 +91,7 @@ class EmployeeTerritoryResponse(BaseModel):
     """
     employee_id: int
     territory_id: str
-    territory_description: str | None = None
+    territory_description: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -106,21 +107,21 @@ class EmployeeResponse(BaseModel):
     employee_id: int
     last_name: str
     first_name: str
-    title: str | None
-    title_of_courtesy: str | None
-    birth_date: date | None
-    hire_date: date | None
-    address: str | None
-    city: str | None
-    region: str | None
-    postal_code: str | None
-    country: str | None
-    home_phone: str | None
-    extension: str | None
-    notes: str | None
-    reports_to: int | None
-    photo_path: str | None
-    reports_to_name: str | None = None
+    title: Optional[str]
+    title_of_courtesy: Optional[str]
+    birth_date: Optional[date]
+    hire_date: Optional[date]
+    address: Optional[str]
+    city: Optional[str]
+    region: Optional[str]
+    postal_code: Optional[str]
+    country: Optional[str]
+    home_phone: Optional[str]
+    extension: Optional[str]
+    notes: Optional[str]
+    reports_to: Optional[int]
+    photo_path: Optional[str]
+    reports_to_name: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

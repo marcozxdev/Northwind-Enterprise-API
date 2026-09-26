@@ -46,8 +46,6 @@
 # Ejecucion:
 #   uvicorn app.main:app --reload --port 8000
 #
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -80,18 +78,6 @@ tags_metadata = [
     {"name": "Regiones", "description": "CRUD de regiones y territorios"},
 ]
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Gestiona el ciclo de vida de los recursos de la app.
-
-    Sustituye a los eventos @app.on_event("startup"/"shutdown"), deprecados
-    desde FastAPI 0.93 a favor del parametro `lifespan`.
-    """
-    init_redis()
-    yield
-    close_redis()
-
-
 # Crear instancia de FastAPI
 app = FastAPI(
     title=settings.app.NAME,
@@ -100,21 +86,28 @@ app = FastAPI(
     openapi_tags=tags_metadata,
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
 )
 
 # Configurar CORS
-# allow_credentials y allow_origins=["*"] son incompatibles: el navegador
-# descarta las credenciales cuando el origen es comodin. Los origins
-# permitidos se declaran en el .env (CORS_ORIGINS) y el validator de
-# CORSSettings aborta el arranque si alguien reintroduce el comodin.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors.ORIGINS,
-    allow_credentials=settings.cors.ALLOW_CREDENTIALS,
-    allow_methods=settings.cors.ALLOW_METHODS,
-    allow_headers=settings.cors.ALLOW_HEADERS,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicializar Redis al arrancar la app."""
+    init_redis()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cerrar Redis al apagar la app."""
+    close_redis()
 
 
 # Incluir routers

@@ -68,8 +68,10 @@
 #     - total: int
 #
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
+
 
 # ============================================================================
 # ESQUEMAS DE AUTENTICACION
@@ -107,7 +109,7 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=100)
-    full_name: str | None = Field(None, max_length=100)
+    full_name: Optional[str] = Field(None, max_length=100)
 
 
 class TokenResponse(BaseModel):
@@ -140,7 +142,7 @@ class RoleResponse(BaseModel):
     """
     role_id: int
     role_name: str
-    description: str | None
+    description: Optional[str]
 
     model_config = {"from_attributes": True}
 
@@ -176,7 +178,7 @@ class UserResponse(BaseModel):
     user_id: int
     username: str
     email: str
-    full_name: str | None
+    full_name: Optional[str]
     is_active: bool
     roles: list[RoleResponse]
     created_at: datetime
@@ -193,8 +195,8 @@ class UserUpdate(BaseModel):
         - full_name: str | None
         - email:     EmailStr | None
     """
-    full_name: str | None = Field(None, max_length=100)
-    email: EmailStr | None = None
+    full_name: Optional[str] = Field(None, max_length=100)
+    email: Optional[EmailStr] = None
 
 
 class UserUpdateRoles(BaseModel):

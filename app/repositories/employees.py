@@ -15,6 +15,7 @@
 #   get_all_with_filters(last_name, first_name, title, country, reports_to):
 #     - Lista empleados con filtros opcionales
 #
+from typing import List, Optional
 
 from sqlalchemy.orm import Session, selectinload
 
@@ -32,7 +33,7 @@ class EmployeeRepository(BaseRepository[Employee]):
     def __init__(self, db: Session):
         super().__init__(Employee, db)
 
-    def get_with_relations(self, employee_id: int) -> Employee | None:
+    def get_with_relations(self, employee_id: int) -> Optional[Employee]:
         """
         Obtiene un empleado con su jefe y subordinados.
 
@@ -47,7 +48,7 @@ class EmployeeRepository(BaseRepository[Employee]):
             selectinload(Employee.subordinates),
         ).filter(Employee.employee_id == employee_id).first()
 
-    def get_with_territories(self, employee_id: int) -> Employee | None:
+    def get_with_territories(self, employee_id: int) -> Optional[Employee]:
         """
         Obtiene un empleado con sus territorios asignados.
 
@@ -65,12 +66,12 @@ class EmployeeRepository(BaseRepository[Employee]):
         self,
         page: int = 1,
         per_page: int = 10,
-        last_name: str | None = None,
-        first_name: str | None = None,
-        title: str | None = None,
-        country: str | None = None,
-        reports_to: int | None = None,
-    ) -> tuple[list[Employee], int]:
+        last_name: Optional[str] = None,
+        first_name: Optional[str] = None,
+        title: Optional[str] = None,
+        country: Optional[str] = None,
+        reports_to: Optional[int] = None,
+    ) -> tuple[List[Employee], int]:
         """
         Obtiene empleados con filtros.
 

@@ -12,6 +12,7 @@
 #   get_all_with_filters(category_id, supplier_id, discontinued, price_min, price_max, in_stock):
 #     - Lista productos con filtros opcionales
 #
+from typing import List, Optional
 
 from sqlalchemy.orm import Session, selectinload
 
@@ -29,7 +30,7 @@ class ProductRepository(BaseRepository[Product]):
     def __init__(self, db: Session):
         super().__init__(Product, db)
 
-    def get_with_relations(self, product_id: int) -> Product | None:
+    def get_with_relations(self, product_id: int) -> Optional[Product]:
         """
         Obtiene un producto con categoria y proveedor.
 
@@ -48,13 +49,13 @@ class ProductRepository(BaseRepository[Product]):
         self,
         page: int = 1,
         per_page: int = 10,
-        category_id: int | None = None,
-        supplier_id: int | None = None,
-        discontinued: bool | None = None,
-        price_min: float | None = None,
-        price_max: float | None = None,
-        in_stock: bool | None = None,
-    ) -> tuple[list[Product], int]:
+        category_id: Optional[int] = None,
+        supplier_id: Optional[int] = None,
+        discontinued: Optional[bool] = None,
+        price_min: Optional[float] = None,
+        price_max: Optional[float] = None,
+        in_stock: Optional[bool] = None,
+    ) -> tuple[List[Product], int]:
         """
         Obtiene productos con filtros.
 

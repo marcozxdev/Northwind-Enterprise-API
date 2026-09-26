@@ -19,6 +19,7 @@
 #   GET endpoints usan Redis cache con TTL de 5 min (list) y 10 min (detail).
 #   POST/PUT/DELETE invalidan el cache de products.
 #
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -43,12 +44,12 @@ router = APIRouter(prefix="/products", tags=["Productos"])
 def list_products(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
-    category_id: int | None = None,
-    supplier_id: int | None = None,
-    discontinued: bool | None = None,
-    price_min: float | None = None,
-    price_max: float | None = None,
-    in_stock: bool | None = None,
+    category_id: Optional[int] = None,
+    supplier_id: Optional[int] = None,
+    discontinued: Optional[bool] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    in_stock: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
 ):
