@@ -38,7 +38,6 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
 
-
 # Engine de conexion a PostgreSQL
 # pool_pre_ping=True: antes de usar una conexion, verifica que este viva
 engine = create_engine(

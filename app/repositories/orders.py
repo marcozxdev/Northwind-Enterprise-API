@@ -16,7 +16,6 @@
 #     - Crea una orden con sus detalles en una sola transaccion
 #
 from datetime import date
-from typing import List, Optional
 
 from sqlalchemy.orm import Session, selectinload
 
@@ -34,7 +33,7 @@ class OrderRepository(BaseRepository[Order]):
     def __init__(self, db: Session):
         super().__init__(Order, db)
 
-    def get_with_details(self, order_id: int) -> Optional[Order]:
+    def get_with_details(self, order_id: int) -> Order | None:
         """
         Obtiene una orden con todos sus detalles.
 
@@ -61,12 +60,12 @@ class OrderRepository(BaseRepository[Order]):
         self,
         page: int = 1,
         per_page: int = 10,
-        customer_id: Optional[str] = None,
-        employee_id: Optional[int] = None,
-        date_from: Optional[date] = None,
-        date_to: Optional[date] = None,
-        shipped: Optional[bool] = None,
-    ) -> tuple[List[Order], int]:
+        customer_id: str | None = None,
+        employee_id: int | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
+        shipped: bool | None = None,
+    ) -> tuple[list[Order], int]:
         """
         Obtiene ordenes con filtros.
 
@@ -107,7 +106,7 @@ class OrderRepository(BaseRepository[Order]):
 
         return items, total
 
-    def create_with_details(self, order_data: dict, details_data: List[dict]) -> Order:
+    def create_with_details(self, order_data: dict, details_data: list[dict]) -> Order:
         """
         Crea una orden con sus detalles.
 

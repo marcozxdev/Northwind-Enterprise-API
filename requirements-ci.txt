@@ -1,0 +1,10 @@
+# Dependencias de produccion mas las herramientas de desarrollo y CI.
+-r requirements.txt
+
+# --- Testing ---
+pytest==8.3.5
+pytest-asyncio==0.24.0
+httpx==0.28.1
+
+# --- Lint y formato ---
+ruff==0.14.0

@@ -38,18 +38,17 @@
 
 # Modelos de la base de datos Northwind
 from app.models.categories import Category
-from app.models.regions import Region, Territory, UsState
-from app.models.shippers import Shipper
-from app.models.suppliers import Supplier
-from app.models.products import Product
 from app.models.customers import Customer
 from app.models.employees import Employee, EmployeeTerritory
 from app.models.orders import Order, OrderDetail
+from app.models.products import Product
+from app.models.regions import Region, Territory, UsState
 
 # Modelos de autenticacion
 from app.models.roles import Role
+from app.models.shippers import Shipper
+from app.models.suppliers import Supplier
 from app.models.users import User, user_roles
-
 
 # Todos los modelos disponibles para importar desde otros archivos:
 # from app.models import Customer, Order, Product, User, Role, ...

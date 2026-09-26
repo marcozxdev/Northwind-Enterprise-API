@@ -36,9 +36,7 @@
 #     - User puede hacer GET/POST/PUT pero no DELETE.
 
 
-import pytest
 from fastapi.testclient import TestClient
-
 
 # ============================================================================
 # TESTS DE LISTAR CLIENTES

@@ -19,7 +19,6 @@
 #   GET endpoints usan Redis cache con TTL de 3 min (list) y 5 min (detail).
 #   POST/PUT/DELETE invalidan el cache de customers.
 #
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -44,10 +43,10 @@ router = APIRouter(prefix="/customers", tags=["Clientes"])
 def list_customers(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
-    company_name: Optional[str] = None,
-    city: Optional[str] = None,
-    country: Optional[str] = None,
-    contact_title: Optional[str] = None,
+    company_name: str | None = None,
+    city: str | None = None,
+    country: str | None = None,
+    contact_title: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
 ):

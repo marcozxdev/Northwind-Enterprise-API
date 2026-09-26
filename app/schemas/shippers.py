@@ -19,7 +19,6 @@
 #   ShipperList:
 #     - items, total
 #
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -29,13 +28,13 @@ class ShipperCreate(BaseModel):
     Cuerpo del request para POST /api/shippers
     """
     company_name: str = Field(..., min_length=1, max_length=40)
-    phone: Optional[str] = Field(None, max_length=24)
+    phone: str | None = Field(None, max_length=24)
 
 
 class ShipperUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/shippers/{shipper_id}"""
-    company_name: Optional[str] = Field(None, max_length=40)
-    phone: Optional[str] = Field(None, max_length=24)
+    company_name: str | None = Field(None, max_length=40)
+    phone: str | None = Field(None, max_length=24)
 
 
 class ShipperResponse(BaseModel):
@@ -47,7 +46,7 @@ class ShipperResponse(BaseModel):
     """
     shipper_id: int
     company_name: str
-    phone: Optional[str]
+    phone: str | None
 
     model_config = {"from_attributes": True}
 

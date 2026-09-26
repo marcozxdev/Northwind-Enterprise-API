@@ -9,6 +9,8 @@ Incluye autenticación JWT, roles, caché Redis, documentación automática y **
 ![Redis](https://img.shields.io/badge/Redis-8.1-DC382D?logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-100%20%E2%9C%93-brightgreen)
+![Ruff](https://img.shields.io/badge/lint-ruff-261230?logo=ruff&logoColor=white)
+[![CI](https://github.com/marcozxdev/Northwind-Enterprise-API/actions/workflows/ci.yml/badge.svg)](https://github.com/marcozxdev/Northwind-Enterprise-API/actions/workflows/ci.yml)
 
 ---
 

@@ -1,0 +1,56 @@
+[project]
+name = "northwind-enterprise-api"
+version = "1.0.0"
+description = "API REST empresarial sobre la base de datos Northwind con JWT, RBAC y cache Redis"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# El codigo sigue la convencion estandar de Python (ya formateado con Ruff).
+extend-exclude = [".venv", "alembic"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+]
+ignore = [
+    # Los routers de FastAPI declaran dependencias en el valor por defecto
+    # (Depends(...)), que es el patron idiomatico del framework.
+    "B008",
+    # Expresiones en f-strings de logging: se pasan argumentos perezosos
+    # a proposito para no evaluar el mensaje si el nivel esta deshabilitado.
+    "G004",
+    # BaseRepository usa el patron clasico Generic[TypeVar] en lugar de los
+    # type parameters PEP 695 (class Repo[T]). La sintaxis nueva es mas
+    # concisa pero requiere Python 3.12 en tiempo de parseo, lo que rompe
+    # editores y type checkers que no la soportan todavia. El patron
+    # clasico es ademas el que aparece en la documentacion de SQLAlchemy.
+    "UP046",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Los tests declaran fixtures parametrizadas y excepciones esperadas.
+"tests/*" = ["E501"]
+
+# Los modelos usan relationship("NombreDelModelo") con referencias string.
+# SQLAlchemy las resuelve desde su registry al configurar los mappers, no en
+# tiempo de import, y las relaciones son mutuas (Category<->Product,
+# Order<->Customer, Employee<->EmployeeTerritory). Añadir imports reales
+# provocaría ciclos; el patrón TYPE_CHECKING resolvería el aviso de ruff pero
+# exige mantener el grafo de imports a mano en ocho archivos.
+"app/models/*" = ["F821"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+filterwarnings = ["ignore::DeprecationWarning"]

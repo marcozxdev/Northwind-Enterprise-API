@@ -19,7 +19,7 @@
 #   GET endpoints usan Redis cache con TTL de 30 min (datos estaticos).
 #   POST/PUT/DELETE invalidan el cache de categories.
 #
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.cache import cache_response, delete_cache_pattern

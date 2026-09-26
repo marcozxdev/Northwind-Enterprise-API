@@ -37,8 +37,7 @@
 #   - JWT tiene una fecha de expiración configurada en settings.jwt
 #   - El secret key para JWT está en las variables de entorno
 #
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from jose import JWTError, jwt
@@ -87,7 +86,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
     Genera un token JWT con los datos proporcionados.
 
@@ -104,14 +103,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         # "eyJhbGciOiJIUzI1NiIs..."
     """
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=settings.jwt.ACCESS_TOKEN_EXP_MIN)
     )
-    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC)})
     return jwt.encode(to_encode, settings.jwt.SECRET_KEY, algorithm=settings.jwt.ALGORITHM)
 
 
-def decode_access_token(token: str) -> Optional[dict]:
+def decode_access_token(token: str) -> dict | None:
     """
     Decodifica y valida un token JWT.
 

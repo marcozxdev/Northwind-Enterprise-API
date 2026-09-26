@@ -9,7 +9,6 @@
 #   get_all_with_filters(country, city, company_name):
 #     - Lista proveedores con filtros opcionales
 #
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -31,10 +30,10 @@ class SupplierRepository(BaseRepository[Supplier]):
         self,
         page: int = 1,
         per_page: int = 10,
-        country: Optional[str] = None,
-        city: Optional[str] = None,
-        company_name: Optional[str] = None,
-    ) -> tuple[List[Supplier], int]:
+        country: str | None = None,
+        city: str | None = None,
+        company_name: str | None = None,
+    ) -> tuple[list[Supplier], int]:
         """
         Obtiene proveedores con filtros.
 

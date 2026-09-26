@@ -12,7 +12,6 @@
 #   search(query):
 #     - Busca clientes por company_name o contact_name
 #
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -34,11 +33,11 @@ class CustomerRepository(BaseRepository[Customer]):
         self,
         page: int = 1,
         per_page: int = 10,
-        company_name: Optional[str] = None,
-        city: Optional[str] = None,
-        country: Optional[str] = None,
-        contact_title: Optional[str] = None,
-    ) -> tuple[List[Customer], int]:
+        company_name: str | None = None,
+        city: str | None = None,
+        country: str | None = None,
+        contact_title: str | None = None,
+    ) -> tuple[list[Customer], int]:
         """
         Obtiene clientes con filtros opcionales.
 
@@ -69,7 +68,7 @@ class CustomerRepository(BaseRepository[Customer]):
 
         return items, total
 
-    def search(self, query: str, page: int = 1, per_page: int = 10) -> tuple[List[Customer], int]:
+    def search(self, query: str, page: int = 1, per_page: int = 10) -> tuple[list[Customer], int]:
         """
         Busca clientes por company_name o contact_name.
 

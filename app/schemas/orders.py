@@ -37,7 +37,6 @@
 #     - items, total, page, per_page
 #
 from datetime import date
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -62,37 +61,37 @@ class OrderCreate(BaseModel):
     """
     Cuerpo del request para POST /api/orders
     """
-    customer_id: Optional[str] = None
-    employee_id: Optional[int] = None
-    order_date: Optional[date] = None
-    required_date: Optional[date] = None
-    shipped_date: Optional[date] = None
-    ship_via: Optional[int] = None
-    freight: Optional[float] = None
-    ship_name: Optional[str] = Field(None, max_length=40)
-    ship_address: Optional[str] = Field(None, max_length=60)
-    ship_city: Optional[str] = Field(None, max_length=15)
-    ship_region: Optional[str] = Field(None, max_length=15)
-    ship_postal_code: Optional[str] = Field(None, max_length=10)
-    ship_country: Optional[str] = Field(None, max_length=15)
+    customer_id: str | None = None
+    employee_id: int | None = None
+    order_date: date | None = None
+    required_date: date | None = None
+    shipped_date: date | None = None
+    ship_via: int | None = None
+    freight: float | None = None
+    ship_name: str | None = Field(None, max_length=40)
+    ship_address: str | None = Field(None, max_length=60)
+    ship_city: str | None = Field(None, max_length=15)
+    ship_region: str | None = Field(None, max_length=15)
+    ship_postal_code: str | None = Field(None, max_length=10)
+    ship_country: str | None = Field(None, max_length=15)
     details: list[OrderDetailCreate] = []
 
 
 class OrderUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/orders/{order_id}"""
-    customer_id: Optional[str] = None
-    employee_id: Optional[int] = None
-    order_date: Optional[date] = None
-    required_date: Optional[date] = None
-    shipped_date: Optional[date] = None
-    ship_via: Optional[int] = None
-    freight: Optional[float] = None
-    ship_name: Optional[str] = Field(None, max_length=40)
-    ship_address: Optional[str] = Field(None, max_length=60)
-    ship_city: Optional[str] = Field(None, max_length=15)
-    ship_region: Optional[str] = Field(None, max_length=15)
-    ship_postal_code: Optional[str] = Field(None, max_length=10)
-    ship_country: Optional[str] = Field(None, max_length=15)
+    customer_id: str | None = None
+    employee_id: int | None = None
+    order_date: date | None = None
+    required_date: date | None = None
+    shipped_date: date | None = None
+    ship_via: int | None = None
+    freight: float | None = None
+    ship_name: str | None = Field(None, max_length=40)
+    ship_address: str | None = Field(None, max_length=60)
+    ship_city: str | None = Field(None, max_length=15)
+    ship_region: str | None = Field(None, max_length=15)
+    ship_postal_code: str | None = Field(None, max_length=10)
+    ship_country: str | None = Field(None, max_length=15)
 
 
 class OrderDetailResponse(BaseModel):
@@ -109,8 +108,8 @@ class OrderDetailResponse(BaseModel):
     unit_price: float
     quantity: int
     discount: float
-    subtotal: Optional[float] = None
-    product_name: Optional[str] = None
+    subtotal: float | None = None
+    product_name: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -125,23 +124,23 @@ class OrderResponse(BaseModel):
         - customer_name, employee_name, shipper_name (joins)
     """
     order_id: int
-    customer_id: Optional[str]
-    employee_id: Optional[int]
-    order_date: Optional[date]
-    required_date: Optional[date]
-    shipped_date: Optional[date]
-    ship_via: Optional[int]
-    freight: Optional[float]
-    ship_name: Optional[str]
-    ship_address: Optional[str]
-    ship_city: Optional[str]
-    ship_region: Optional[str]
-    ship_postal_code: Optional[str]
-    ship_country: Optional[str]
+    customer_id: str | None
+    employee_id: int | None
+    order_date: date | None
+    required_date: date | None
+    shipped_date: date | None
+    ship_via: int | None
+    freight: float | None
+    ship_name: str | None
+    ship_address: str | None
+    ship_city: str | None
+    ship_region: str | None
+    ship_postal_code: str | None
+    ship_country: str | None
     details: list[OrderDetailResponse] = []
-    customer_name: Optional[str] = None
-    employee_name: Optional[str] = None
-    shipper_name: Optional[str] = None
+    customer_name: str | None = None
+    employee_name: str | None = None
+    shipper_name: str | None = None
 
     model_config = {"from_attributes": True}
 

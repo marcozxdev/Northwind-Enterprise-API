@@ -29,14 +29,12 @@
 #     - Headers con token de usuario viewer.
 #
 import os
-from typing import AsyncGenerator, Generator
+from collections.abc import Generator
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 # Configurar variables de entorno para tests
@@ -49,10 +47,9 @@ os.environ.setdefault("JWT_SECRET_KEY", "YOUR-SECRET-key")
 os.environ.setdefault("JWT_ALGORITHM", "HS256")
 os.environ.setdefault("ACCESS_TOKEN_EXP_MIN", "40")
 
-from app.core.database import Base, get_db
+from app.core.database import get_db
 from app.core.security import create_access_token
 from app.main import app
-
 
 # ============================================================================
 # DATABASE FIXTURES
@@ -128,8 +125,6 @@ def get_auth_token(username: str, password: str) -> str:
     """
     Funcion auxiliar para obtener un token JWT haciendo login.
     """
-    from app.core.security import verify_password
-    from app.models.users import User
 
     # Buscar usuario en la BD
     # Nota: Para tests, generamos el token directamente

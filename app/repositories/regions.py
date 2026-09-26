@@ -13,7 +13,6 @@
 #   get_by_region(region_id):
 #     - Lista territorios de una region especifica
 #
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -42,7 +41,7 @@ class TerritoryRepository(BaseRepository[Territory]):
     def __init__(self, db: Session):
         super().__init__(Territory, db)
 
-    def get_by_region(self, region_id: int) -> List[Territory]:
+    def get_by_region(self, region_id: int) -> list[Territory]:
         """
         Lista territorios de una region.
 

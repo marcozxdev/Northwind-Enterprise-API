@@ -34,7 +34,7 @@
 #
 #       # Agregar metodos especificos...
 #
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy.orm import Session
 
@@ -52,11 +52,11 @@ class BaseRepository(Generic[ModelType]):
         db: Sesion de base de datos
     """
 
-    def __init__(self, model: Type[ModelType], db: Session):
+    def __init__(self, model: type[ModelType], db: Session):
         self.model = model
         self.db = db
 
-    def get_by_id(self, id_value) -> Optional[ModelType]:
+    def get_by_id(self, id_value) -> ModelType | None:
         """
         Obtiene un registro por su ID.
 
@@ -70,7 +70,7 @@ class BaseRepository(Generic[ModelType]):
             self.model.__table__.primary_key.columns[0] == id_value
         ).first()
 
-    def get_all(self, page: int = 1, per_page: int = 10) -> tuple[List[ModelType], int]:
+    def get_all(self, page: int = 1, per_page: int = 10) -> tuple[list[ModelType], int]:
         """
         Obtiene todos los registros con paginacion.
 
@@ -102,7 +102,7 @@ class BaseRepository(Generic[ModelType]):
         self.db.refresh(db_obj)
         return db_obj
 
-    def update(self, id_value, data: dict) -> Optional[ModelType]:
+    def update(self, id_value, data: dict) -> ModelType | None:
         """
         Actualiza un registro existente.
 

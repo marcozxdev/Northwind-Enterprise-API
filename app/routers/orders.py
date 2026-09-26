@@ -20,7 +20,6 @@
 #   POST/PUT/DELETE invalidan el cache de orders.
 #
 from datetime import date
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -67,11 +66,11 @@ def _enrich_order(order) -> OrderResponse:
 def list_orders(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
-    customer_id: Optional[str] = None,
-    employee_id: Optional[int] = None,
-    date_from: Optional[date] = None,
-    date_to: Optional[date] = None,
-    shipped: Optional[bool] = None,
+    customer_id: str | None = None,
+    employee_id: int | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    shipped: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["admin", "user", "viewer"])),
 ):

@@ -97,7 +97,8 @@
 #   db.commit()
 #
 from datetime import date
-from sqlalchemy import ForeignKey, Integer, String
+
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base

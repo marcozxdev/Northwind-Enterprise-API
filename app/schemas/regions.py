@@ -29,7 +29,6 @@
 #   RegionList:
 #     - items, total
 #
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -43,7 +42,7 @@ class RegionCreate(BaseModel):
 
 class RegionUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/regions/{region_id}"""
-    region_description: Optional[str] = Field(None, max_length=60)
+    region_description: str | None = Field(None, max_length=60)
 
 
 class RegionResponse(BaseModel):
@@ -76,8 +75,8 @@ class TerritoryCreate(BaseModel):
 
 class TerritoryUpdate(BaseModel):
     """Todos los campos opcionales para PUT /api/territories/{territory_id}"""
-    territory_description: Optional[str] = Field(None, max_length=60)
-    region_id: Optional[int] = None
+    territory_description: str | None = Field(None, max_length=60)
+    region_id: int | None = None
 
 
 class TerritoryResponse(BaseModel):
@@ -90,6 +89,6 @@ class TerritoryResponse(BaseModel):
     territory_id: str
     territory_description: str
     region_id: int
-    region_name: Optional[str] = None
+    region_name: str | None = None
 
     model_config = {"from_attributes": True}

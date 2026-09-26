@@ -76,11 +76,11 @@
 #   tiene_admin = any(r.role_name == "admin" for r in usuario.roles)
 #
 from datetime import datetime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, DateTime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
 
 # Tabla asociativa user_roles
 # Define la relacion M:N entre users y roles
